@@ -5,6 +5,7 @@
     "main": "index.js",
     "scripts": {
         "build": "tsc -p tsconfig.json",
+        "testNewBloc": "tsc -p tsconfig.json && node dist/example/newExample.js",
         "start": "npm run build && node dist/index.js"
     },
     "keywords": [],

@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "build": "tsc -p tsconfig.json",
-        "testNewBloc": "tsc -p tsconfig.json && node dist/example/newExample.js",
+        "testNewBloc": "npm run build && node dist/example/newExample.js",
         "start": "npm run build && node dist/index.js"
     },
     "keywords": [],
@@ -13,7 +13,7 @@
     "license": "ISC",
     "dependencies": {
         "@felangel/bloc": "../",
-        "rxjs": "^6.5.2"
+        "rxjs": "^7.8.1"
     },
     "devDependencies": {
         "@types/node": "^10.11.0",

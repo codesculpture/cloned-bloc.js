@@ -1,7 +1,8 @@
-import { Observable, Subject, EMPTY, Subscription, PartialObserver,  } from 'rxjs'
+import { Observable, Subject, EMPTY, Subscription  } from 'rxjs'
 import { catchError, concatMap, filter, map, } from 'rxjs/operators'
 import { BlocObserver, EventStreamClosedError, Transition } from '../bloc'
 import { Emitter } from './emitter'
+import { Stream } from './stream';
 
 
 export type NextFunction<Event, State> = (value: Event) => Observable<Transition<Event, State>>
@@ -278,31 +279,38 @@ export abstract class Bloc<Event, State> extends Observable<State> {
   }
 }
 
-function flatMapStreamTransformer<T>(stream: Subject<Subject<T>>): Subject<T> {
-  const controller = new Subject<T>();
+function flatMapStreamTransformer<T>(stream: Subject<Subject<T>>): Stream<T> {
+  const controller = new Stream<T>();
 
-    
-  controller.unsubscribe = function () {
-    this.unsubscribe();
-    if(subscriptions.length === 0) return;
-
-    for(const sub of subscriptions){
-      sub.unsubscribe();
-    }
-  }
-  let subscriptions: Subscription[] = [];
-  const outerSubscription = stream.subscribe((observer) => {
-    const subscription = observer.subscribe(controller.next, controller.error, onClose);
+  // controller.
+  controller.onListen = () => {
+    const subscriptions: Subscription[] = [];
 
     function onClose() {
-      subscriptions =  subscriptions.filter((e) => e != subscription)
-      if(subscriptions.length == 0) controller.complete();
+      controller.complete();
+      if(subscriptions.length === 0) return;   
+      
+      for(const subs of subscriptions) subs.unsubscribe();
     }
-    subscriptions.push(subscription);
-  }, null, () => {
-    subscriptions = subscriptions.filter(e => e != outerSubscription);
-    if(subscriptions.length == 0) controller.complete();
-  })
+
+    const outerSubscription = stream.subscribe((observer) => {
+      const subscription = observer.subscribe(controller.next, controller.error, () => {
+        const index = subscriptions.indexOf(subscription);
+        subscriptions.splice(index, 1);
+        if(subscriptions.length === 0) {
+          onClose();
+        }
+        subscriptions.push(subscription);
+      });
+
+    }, controller.error, () => {
+      const index = subscriptions.indexOf(outerSubscription);
+      subscriptions.splice(index, 1);
+      if(subscriptions.length === 0) {
+        onClose()
+      };
+    })
+  }
 
   return controller;
 }

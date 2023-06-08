@@ -91,7 +91,7 @@
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.22.1",
-    "rxjs": "^6.5.3",
+    "rxjs": "^7.8.1",
     "ts-jest": "^26.3.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
@@ -101,6 +101,6 @@
     "typescript": "^3.0.3"
   },
   "peerDependencies": {
-    "rxjs": "6.x.x"
+    "rxjs": "7.x.x"
   }
 }

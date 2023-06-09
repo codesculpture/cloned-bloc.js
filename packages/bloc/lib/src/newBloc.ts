@@ -281,24 +281,17 @@ export abstract class Bloc<Event, State> extends Observable<State> {
 
 function flatMapStreamTransformer<T>(stream: Subject<Subject<T>>): Stream<T> {
   const controller = new Stream<T>();
-
-  // controller.
   controller.onListen = () => {
     const subscriptions: Subscription[] = [];
 
-    function onClose() {
-      controller.complete();
-      if(subscriptions.length === 0) return;   
-      
-      for(const subs of subscriptions) subs.unsubscribe();
-    }
 
+    
     const outerSubscription = stream.subscribe((observer) => {
       const subscription = observer.subscribe(controller.next, controller.error, () => {
         const index = subscriptions.indexOf(subscription);
         subscriptions.splice(index, 1);
         if(subscriptions.length === 0) {
-          onClose();
+          controller.complete();
         }
         subscriptions.push(subscription);
       });
@@ -307,9 +300,17 @@ function flatMapStreamTransformer<T>(stream: Subject<Subject<T>>): Stream<T> {
       const index = subscriptions.indexOf(outerSubscription);
       subscriptions.splice(index, 1);
       if(subscriptions.length === 0) {
-        onClose()
+        controller.complete();
       };
     })
+
+    controller.onCancel = () => {
+      
+      if(subscriptions.length === 0) return;   
+      
+      for(const subs of subscriptions) subs.unsubscribe();
+      
+    }
   }
 
   return controller;

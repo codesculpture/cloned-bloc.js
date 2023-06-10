@@ -28,6 +28,7 @@ class Stream<T> implements StreamLike<T>{
 
             if(!this.observed) this.onCancel();
         }
+    return subscription;
     }
 
 }
